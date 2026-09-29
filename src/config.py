@@ -11,7 +11,12 @@ LAKE_DIR = DATA_ROOT / "lake"
 OUTPUT_DIR = DATA_ROOT / "output"
 CHECKPOINT_DIR = DATA_ROOT / "checkpoint"
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/opt/app/report/results"))
+# ---------- Streaming ----------
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+KAFKA_RATINGS_TOPIC = os.getenv("KAFKA_RATINGS_TOPIC", "ratings")
 
+# Delta lake (giao dịch) – cùng thư mục `data/lake` nhưng dùng `_delta_log`
+DELTA_LAKE_PATH = LAKE_DIR / "ratings_delta"
 # Bộ dữ liệu đang dùng: "ml-25m" cho chạy thật, "ml-latest-small" khi phát triển
 DATASET = os.environ.get("DATASET", "ml-25m")
 
