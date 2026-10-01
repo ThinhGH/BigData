@@ -55,9 +55,21 @@
   <div class="controls">
     <input id="userId" type="number" min="1" value="1" placeholder="userId">
     <button onclick="loadUser()">Xem gợi ý</button>
+    <button onclick="toggleChart('chartPanel')" style="background:#4b5563; border-color:#4b5563;">📊 Phân tích xu hướng</button>
+    <button onclick="toggleChart('evalChartPanel')" style="background:#b91c1c; border-color:#b91c1c;">🎯 Thực tế vs Dự đoán</button>
     <input id="q" class="search-input" placeholder="Tìm phim…" oninput="doSearch(this.value)">
   </div>
   <div class="suggested" id="suggested"></div>
+
+  <div class="panel" id="chartPanel" style="display:none; text-align:center;">
+    <h2 style="margin-bottom: 10px;">Phân tích Xu hướng Người dùng</h2>
+    <img id="trendChartImg" src="/static/user_trend.png" style="max-width:100%; border-radius:8px; border:1px solid var(--line);">
+  </div>
+
+  <div class="panel" id="evalChartPanel" style="display:none; text-align:center;">
+    <h2 style="margin-bottom: 10px;">Đánh giá: Rating Thực tế vs Dự đoán</h2>
+    <img id="evalChartImg" src="/static/actual_vs_predicted.png" style="max-width:100%; border-radius:8px; border:1px solid var(--line);">
+  </div>
 
   <div class="panel" id="searchPanel" style="display:none">
     <h2>Kết quả tìm kiếm</h2>
@@ -289,6 +301,18 @@ $('rateForm').addEventListener('submit', async function(e) {
     logEl.textContent = "❌ Lỗi kết nối: " + err.message;
   }
 });
+
+function toggleChart(panelId) {
+  const p = $(panelId);
+  if (p.style.display === 'none') {
+    p.style.display = 'block';
+    // Ép tải lại ảnh để tránh cache
+    const img = p.querySelector('img');
+    if (img) img.src = img.src.split('?')[0] + '?t=' + new Date().getTime();
+  } else {
+    p.style.display = 'none';
+  }
+}
 </script>
 </body>
 </html>

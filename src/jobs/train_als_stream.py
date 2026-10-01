@@ -23,10 +23,16 @@ def main() -> None:
     # Ưu tiên đọc Delta Lake (dữ liệu streaming đã ghi).
     # Nếu Delta chưa có, fallback về Parquet gốc (batch pipeline).
     if delta_path.exists() and any(delta_path.iterdir()):
-        print(f"Đọc dữ liệu từ Delta Lake: {config.DELTA_LAKE_PATH}")
-        ratings = spark.read.format("delta").load(str(config.DELTA_LAKE_PATH))
+        print(f"Đọc dữ liệu MỚI từ Delta Lake: {config.DELTA_LAKE_PATH}")
+        stream_ratings = spark.read.format("delta").load(str(config.DELTA_LAKE_PATH))
+        
+        print(f"Đọc dữ liệu LỊCH SỬ từ Parquet: {config.RATINGS_PARQUET}")
+        historical_ratings = spark.read.parquet(str(config.RATINGS_PARQUET))
+        
+        print("Gộp (Union) dữ liệu cũ và mới để train...")
+        ratings = historical_ratings.unionByName(stream_ratings)
     elif Path(str(config.RATINGS_PARQUET)).exists():
-        print(f"Delta Lake chưa tồn tại, fallback về Parquet: {config.RATINGS_PARQUET}")
+        print(f"Delta Lake chưa tồn tại, chỉ đọc dữ liệu LỊCH SỬ từ Parquet: {config.RATINGS_PARQUET}")
         ratings = spark.read.parquet(str(config.RATINGS_PARQUET))
     else:
         print("Không tìm thấy dữ liệu (Delta Lake hoặc Parquet). Hãy chạy pipeline trước.")

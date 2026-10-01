@@ -42,8 +42,8 @@ ax2.grid(True, alpha=0.3)
 
 plt.tight_layout()
 
-# Lưu biểu đồ vào thư mục artifact
-out_dir = r"C:\Users\HP\.gemini\antigravity\brain\543c2e2c-3f7c-4abc-a8b1-4f397e48d3de"
+# Lưu biểu đồ vào thư mục static của Web App
+out_dir = r"E:\BigData\serving\static"
 out_path = Path(out_dir) / "user_trend.png"
 plt.savefig(out_path, dpi=120)
 print(f"Saved chart to {out_path}")
