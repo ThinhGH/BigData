@@ -23,6 +23,9 @@ def get_spark(app_name: str = "stream_ingest") -> SparkSession:
         .appName(app_name)
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        # Giới hạn số lượng batch checkpoint lưu lại (mặc định 100 -> giảm còn 5 để không phình ổ cứng)
+        .config("spark.sql.streaming.minBatchesToRetain", "5")
+        .config("spark.databricks.delta.retentionDurationCheck.enabled", "false")
         .getOrCreate()
     )
 

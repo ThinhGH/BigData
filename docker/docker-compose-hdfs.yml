@@ -1,5 +1,36 @@
-
 services:
+  # ==========================================
+  # CỤM HDFS (HADOOP DISTRIBUTED FILE SYSTEM)
+  # ==========================================
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    ports:
+      - "9870:9870" # Giao diện Web HDFS
+      - "9000:9000" # Cổng giao tiếp Spark <-> HDFS
+    environment:
+      - CLUSTER_NAME=movielens-hdfs
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    depends_on:
+      - namenode
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode2
+    depends_on:
+      - namenode
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+
+  # ==========================================
+  # CỤM SPARK VÀ KAFKA (Đã bật USE_HDFS)
+  # ==========================================
   spark-master:
     build:
       context: ..
@@ -7,9 +38,12 @@ services:
     image: movielens-spark:latest
     container_name: spark-master
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    depends_on:
+      - namenode
     environment:
       SPARK_MASTER_URL: spark://spark-master:7077
       PYTHONPATH: /opt/app:/opt/spark/python:/opt/spark/python/lib/py4j-src.zip
+      USE_HDFS: "true"
     ports:
       - "8080:8080"
       - "7077:7077"
@@ -29,10 +63,12 @@ services:
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
+      - namenode
     environment:
       SPARK_WORKER_CORES: "${SPARK_WORKER_CORES:-3}"
       SPARK_WORKER_MEMORY: "${SPARK_WORKER_MEMORY:-3g}"
       PYTHONPATH: /opt/app:/opt/spark/python:/opt/spark/python/lib/py4j-src.zip
+      USE_HDFS: "true"
     deploy:
       replicas: ${SPARK_WORKER_REPLICAS:-2}
     volumes:
@@ -96,8 +132,11 @@ services:
         condition: service_healthy
       spark-master:
         condition: service_started
+      namenode:
+        condition: service_started
     environment:
       PYTHONPATH: /opt/app:/opt/spark/python:/opt/spark/python/lib/py4j-src.zip
+      USE_HDFS: "true"
     volumes:
       - ../data:/opt/data
       - ../src:/opt/app/src
@@ -119,8 +158,11 @@ services:
         condition: service_healthy
       spark-master:
         condition: service_started
+      namenode:
+        condition: service_started
     environment:
       PYTHONPATH: /opt/app:/opt/spark/python:/opt/spark/python/lib/py4j-src.zip
+      USE_HDFS: "true"
     volumes:
       - ../data:/opt/data
       - ../src:/opt/app/src
@@ -141,3 +183,5 @@ services:
     volumes:
       - ../data:/opt/data
       - ../serving:/opt/app/serving
+    environment:
+      USE_HDFS: "false" # Web API và SQLite vẫn phải chạy bằng ổ cứng Local

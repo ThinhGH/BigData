@@ -13,8 +13,10 @@ if exist "data\checkpoint" rmdir /S /Q "data\checkpoint"
 
 echo.
 echo Xoa Model va CSDL hien tai de Spark train lai tu dau...
+if exist "data\output\model" rmdir /S /Q "data\output\model"
 if exist "data\output\als_model" rmdir /S /Q "data\output\als_model"
 if exist "data\output\recs.sqlite" del /F /Q "data\output\recs.sqlite"
+if exist "data\output\.last_trained_stream_count" del /F /Q "data\output\.last_trained_stream_count"
 
 echo.
 echo Dang khoi dong lai he thong Big Data...
