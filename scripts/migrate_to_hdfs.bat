@@ -7,8 +7,8 @@ echo [1/5] Dang tat he thong Local cu...
 docker compose -f docker\docker-compose.yml down -v
 
 echo.
-echo [2/5] Dang khoi dong he thong moi voi Cum HDFS (1 NameNode + 2 DataNode)...
-docker compose -f docker\docker-compose-hdfs.yml up -d
+echo [2/5] Dang khoi dong he thong voi Cum HDFS (1 NameNode + 2 DataNode, bat san qua docker\.env)...
+docker compose -f docker\docker-compose.yml up -d
 
 echo.
 echo [3/5] Dang cho 20 giay de NameNode va DataNode khoi dong hoan toan...
@@ -34,6 +34,6 @@ echo - Spark Master van truy cap o http://localhost:8080
 echo - De quan ly file tren HDFS, truy cap http://localhost:9870
 echo.
 echo De tat he thong HDFS sau nay, hay dung lenh:
-echo docker compose -f docker\docker-compose-hdfs.yml down
+echo docker compose -f docker\docker-compose.yml down
 echo ==========================================================
 pause

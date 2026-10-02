@@ -42,13 +42,23 @@ MOVIES_PARQUET = LAKE_DIR_STR + "/movies.parquet"
 
 MODEL_DIR = OUTPUT_DIR_STR + "/model"
 RECS_PARQUET = OUTPUT_DIR_STR + "/recommendations.parquet"
-ITEM_INDEX_PARQUET = OUTPUT_DIR_STR + "/item_index.parquet"
+
+# Số bản sao mỗi block khi Spark GHI lên HDFS. Replication do phía ghi (client)
+# quyết định, không phải NameNode — không đặt thì Spark xin mặc định 3 trong khi
+# cụm chỉ có 2 DataNode, mọi block bị báo under-replicated. Phải khớp
+# HDFS_CONF_dfs_replication trong docker/docker-compose.yml.
+HDFS_REPLICATION = 2
 
 # ---------- Local Outputs (SQLite & numpy) ----------
 SCALING_RESULTS_DIR = RESULTS_DIR / "scaling_scratch"
 SCALING_MODEL_DIR = OUTPUT_DIR_STR + "/model_scaling_scratch"
 RECS_SQLITE = OUTPUT_DIR / "recs.sqlite"
 ITEM_FACTORS_NPY = OUTPUT_DIR / "item_factors.npy"
+# LUÔN ở local, kể cả khi USE_HDFS=true: đây là file đi cặp với item_factors.npy
+# cho web (serving/api.py) đọc từ /opt/data/output. Trước đây nó nhận tiền tố
+# HDFS nên export_recs ghi lên HDFS (bằng pandas — vốn không ghi thẳng HDFS được)
+# trong khi web vẫn đọc bản local cũ: "phim tương tự" trả sai phim.
+ITEM_INDEX_PARQUET = OUTPUT_DIR / "item_index.parquet"
 
 # Chia tập theo thời gian trong từng user
 SPLIT_TRAIN = 0.70

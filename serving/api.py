@@ -55,7 +55,9 @@ app = FastAPI(title="MovieLens ALS Recommender")
 _store: Optional[Store] = None
 MODEL_PATH = Path("/opt/app/data/output/model/recs.sqlite")
 _last_mtime = 0
-_connection: sqlite3.Connection | None = None
+# Optional[...] chứ không dùng "X | None": test chạy trong container Spark
+# (Python 3.8), nơi cú pháp "|" cho kiểu dữ liệu lỗi ngay lúc import module.
+_connection: Optional[sqlite3.Connection] = None
 def get_connection() -> sqlite3.Connection:
     global _connection, _last_mtime
     mtime = MODEL_PATH.stat().st_mtime

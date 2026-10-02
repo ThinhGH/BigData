@@ -18,7 +18,7 @@ RATING_SCHEMA = StructType() \
     .add("timestamp", LongType())
 
 def get_spark(app_name: str = "stream_ingest") -> SparkSession:
-    return (
+    builder = (
         SparkSession.builder
         .appName(app_name)
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
@@ -26,8 +26,11 @@ def get_spark(app_name: str = "stream_ingest") -> SparkSession:
         # Giới hạn số lượng batch checkpoint lưu lại (mặc định 100 -> giảm còn 5 để không phình ổ cứng)
         .config("spark.sql.streaming.minBatchesToRetain", "5")
         .config("spark.databricks.delta.retentionDurationCheck.enabled", "false")
-        .getOrCreate()
     )
+    if config.USE_HDFS:
+        # Delta ghi lên HDFS với 2 bản sao, khớp số DataNode (xem config.HDFS_REPLICATION).
+        builder = builder.config("spark.hadoop.dfs.replication", str(config.HDFS_REPLICATION))
+    return builder.getOrCreate()
 
 def main() -> None:
     spark = get_spark()
