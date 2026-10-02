@@ -40,6 +40,7 @@ def main() -> None:
         .option("kafka.bootstrap.servers", config.KAFKA_BOOTSTRAP_SERVERS)
         .option("subscribe", config.KAFKA_RATINGS_TOPIC)
         .option("startingOffsets", "latest")   # hoặc "earliest" cho test
+        .option("failOnDataLoss", "false")     # Tránh crash khi Kafka dọn dẹp log quá hạn (retention) hoặc lệch offset
         .load()
     )
 

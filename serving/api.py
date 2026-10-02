@@ -13,7 +13,7 @@ không cần khởi động lại.
 """
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
@@ -30,6 +30,10 @@ class RatingEvent(BaseModel):
     userId: int
     movieId: int
     rating: float
+    timestamp: Optional[int] = None
+
+class BatchRatingRequest(BaseModel):
+    events: List[RatingEvent]
 
 _producer = None
 
@@ -115,10 +119,24 @@ def get_store() -> Store:
 def submit_rating(event: RatingEvent):
     producer = get_kafka_producer()
     rating_dict = event.dict()
-    rating_dict["timestamp"] = int(time.time())
+    if not rating_dict.get("timestamp"):
+        rating_dict["timestamp"] = int(time.time())
     producer.send("ratings", rating_dict)
     producer.flush()
     return {"status": "success", "event": rating_dict}
+
+
+@app.post("/api/rate/batch")
+def submit_rating_batch(req: BatchRatingRequest):
+    producer = get_kafka_producer()
+    now = int(time.time())
+    for ev in req.events:
+        d = ev.dict()
+        if not d.get("timestamp"):
+            d["timestamp"] = now
+        producer.send("ratings", d)
+    producer.flush()
+    return {"status": "success", "sent": len(req.events)}
 
 
 @app.get("/health")
@@ -158,6 +176,35 @@ def similar(movie_id: int, k: int = Query(10, ge=1, le=50), store: Store = Depen
 @app.get("/api/movies/search")
 def search(q: str = Query(..., min_length=1), limit: int = Query(10, ge=1, le=50), store: Store = Depends(get_store)):
     return {"query": q, "items": store.search(q, limit)}
+
+
+@app.get("/api/hdfs/stats")
+def hdfs_stats():
+    import urllib.request
+    try:
+        url = "http://namenode:9870/jmx?qry=Hadoop:service=NameNode,name=NameNodeInfo"
+        req = urllib.request.Request(url, headers={"Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            bean = data["beans"][0]
+            live_nodes = json.loads(bean.get("LiveNodes", "{}"))
+            nodes_info = []
+            for node_addr, info in live_nodes.items():
+                nodes_info.append({
+                    "node": node_addr.split(":")[0],
+                    "used_mb": round(info.get("usedSpace", 0) / (1024 * 1024), 2),
+                    "capacity_gb": round(info.get("capacity", 0) / (1024 * 1024 * 1024), 2),
+                    "blocks": info.get("numBlocks", 0),
+                    "lastContact": info.get("lastContact", 0)
+                })
+            return {
+                "status": "online",
+                "total_blocks": bean.get("TotalBlocks", 0),
+                "used_mb": round(bean.get("Used", 0) / (1024 * 1024), 2),
+                "nodes": nodes_info
+            }
+    except Exception as e:
+        return {"status": "error", "message": str(e), "nodes": []}
 
 
 @app.get("/api/stats")

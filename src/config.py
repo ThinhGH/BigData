@@ -36,9 +36,18 @@ DATASET = os.environ.get("DATASET", "ml-25m")
 
 RATINGS_CSV = RAW_DIR / DATASET / "ratings.csv"
 MOVIES_CSV = RAW_DIR / DATASET / "movies.csv"
+GENOME_SCORES_CSV = RAW_DIR / DATASET / "genome-scores.csv"
+GENOME_TAGS_CSV = RAW_DIR / DATASET / "genome-tags.csv"
+TAGS_CSV = RAW_DIR / DATASET / "tags.csv"
+LINKS_CSV = RAW_DIR / DATASET / "links.csv"
 
 RATINGS_PARQUET = LAKE_DIR_STR + "/ratings.parquet"
 MOVIES_PARQUET = LAKE_DIR_STR + "/movies.parquet"
+GENOME_SCORES_PARQUET = LAKE_DIR_STR + "/genome_scores.parquet"
+GENOME_TAGS_PARQUET = LAKE_DIR_STR + "/genome_tags.parquet"
+TAGS_PARQUET = LAKE_DIR_STR + "/tags.parquet"
+LINKS_PARQUET = LAKE_DIR_STR + "/links.parquet"
+MOVIE_TOP_TAGS_PARQUET = LAKE_DIR_STR + "/movie_top_tags.parquet"
 
 MODEL_DIR = OUTPUT_DIR_STR + "/model"
 RECS_PARQUET = OUTPUT_DIR_STR + "/recommendations.parquet"
